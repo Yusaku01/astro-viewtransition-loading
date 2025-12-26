@@ -1,0 +1,14 @@
+---
+import ArticleList from '../components/ArticleList.astro';
+import { getAllArticles } from '../api/article-api';
+import Layout from '../layouts/Layout.astro';
+
+const articles = await getAllArticles();
+---
+
+<Layout>
+  <main>
+    <h1>Mini Blog</h1>
+    <ArticleList articles={articles} />
+  </main>
+</Layout>

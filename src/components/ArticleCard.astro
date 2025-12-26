@@ -1,0 +1,19 @@
+---
+import type { Article } from '../api/article-api';
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const preview =
+  article.body.length > 120 ? `${article.body.slice(0, 120)}...` : article.body;
+---
+
+<article>
+  <h2>
+    <a href={`/${article.slug}/`}>{article.title}</a>
+  </h2>
+  <p>{article.date}</p>
+  <p>{preview}</p>
+</article>
