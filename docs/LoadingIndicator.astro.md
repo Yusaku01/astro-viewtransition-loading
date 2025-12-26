@@ -33,39 +33,6 @@ Astro View Transitions の画面遷移中に、画面上部へ進捗バー型の
 4. `astro:before-swap` でタイマーを解除し、必要なら表示開始済みのバーを完了処理へ移行。
 5. 新しいドキュメント側にも要素を移し、`progress=1` -> フェードアウト -> 初期状態へ戻す。
 
-## 全体像 (時系列の図)
-
-ユーザー操作から遷移完了までの流れに、表示/非表示タイミングを入れた図です。
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'textColor': '#ffffff', 'signalLineColor': '#000000', 'labelTextColor': '#000000', 'noteTextColor': '#000000', 'fontSize': '16px' }, 'themeCSS': '.alt messageText{fill:#111111 !important;} .alt [class^=\"messageLine\"]{stroke:#111111 !important;} .alt line{stroke:#111111 !important;} .alt polygon{fill:#111111 !important; stroke:#111111 !important;}'} }%%
-sequenceDiagram
-  participant User as ユーザー操作
-  participant Astro as Astro View Transitions
-  participant UI as Loading Indicator
-
-  User->>Astro: 画面遷移を開始
-  Astro->>UI: astro:before-preparation
-  UI->>UI: しきい値タイマー開始
-
-  rect rgba(240, 248, 255, 0.20)
-    alt 【遷移が速い】
-      Astro->>UI: astro:before-swap
-      UI->>UI: しきい値タイマー解除
-      UI->>UI: ローディングUIは表示されない
-    else 【遷移が遅い】
-      UI->>UI: しきい値到達
-      UI->>UI: ローディングUI表示 (インジケータON)
-      Astro->>UI: astro:before-swap
-      UI->>UI: progress=1 -> フェードアウト
-      UI->>UI: ローディングUI非表示 (インジケータOFF)
-    end
-  end
-
-  Astro->>Astro: 新しいドキュメントへ切替
-  UI->>UI: 初期状態へ戻す
-```
-
 ## 状態管理
 
 - `window.__astroLoadingIndicator` により二重初期化を防止します。複数回読み込まれても初期化は一度だけです。
