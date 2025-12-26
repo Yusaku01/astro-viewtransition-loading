@@ -1,7 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-// import LoadingIndicator from '../components/LoadingIndicator.astro';
-import LoadingSpinner from '../components/LoadingSpinner.astro';
+import LoadingIndicator from '../components/LoadingIndicator.astro';
+// import LoadingSpinner from '../components/LoadingSpinner.astro';
 ---
 
 <!doctype html>
@@ -16,8 +16,8 @@ import LoadingSpinner from '../components/LoadingSpinner.astro';
 	</head>
 	<body>
 		<slot />
-		<!-- <LoadingIndicator threshold={0} /> -->
-		<LoadingSpinner threshold={0} />
+		<LoadingIndicator threshold={0} /> 
+		<!-- <LoadingSpinner threshold={0} /> -->
 	</body>
 </html>
 
