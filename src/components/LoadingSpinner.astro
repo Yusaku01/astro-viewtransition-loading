@@ -1,0 +1,138 @@
+---
+export interface Props {
+  color?: string;
+  height?: string;
+  class?: string;
+  animationDuration?: number;
+  threshold?: number | false;
+}
+
+const {
+  color = '#0969da',
+  height = '3px',
+  class: className = 'astro-loading-indicator',
+  animationDuration = 300,
+  threshold: defaultThreshold = 200,
+} = Astro.props;
+
+const threshold = defaultThreshold;
+
+const styles = `.${className} {
+  pointer-events: none;
+  background-color: ${color};
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: ${height};
+  transition: transform ${animationDuration}ms ease-out, opacity ${
+    animationDuration / 2
+  }ms ${animationDuration / 2}ms ease-in;
+  transform: translate3d(0, 0, 0) scaleX(var(--progress, 0));
+  transform-origin: 0;
+}
+
+[dir="rtl"] .${className} {
+  transform-origin: 100% 0;
+}
+`;
+---
+
+<style set:html={styles}></style>
+
+<script is:inline define:vars={{ className, animationDuration, threshold }}>
+(() => {
+  if (window.__astroLoadingIndicator) {
+    return
+  }
+  window.__astroLoadingIndicator = true
+
+  let progress = 0.25
+  let opacity = 0
+  let trickleInterval = undefined
+  let thresholdTimeout = undefined
+  let isActive = false
+
+  const element = document.createElement("div")
+  element.classList.add(className)
+  element.setAttribute("aria-hidden", "true")
+
+  const setProgress = (value) => {
+    progress = value
+    element.style.setProperty("--progress", String(progress))
+  }
+
+  const setOpacity = (value) => {
+    opacity = value
+    element.style.setProperty("opacity", String(opacity))
+  }
+
+  const mount = (doc) => {
+    if (!doc.body) {
+      return
+    }
+    doc.body.prepend(element)
+  }
+
+  setProgress(progress)
+  setOpacity(opacity)
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => mount(document))
+  } else {
+    mount(document)
+  }
+
+  const startIndicator = () => {
+    if (isActive) {
+      return
+    }
+    isActive = true
+    setOpacity(1)
+    trickleInterval = window.setInterval(() => {
+      setProgress(progress + Math.random() * 0.03)
+    }, animationDuration)
+  }
+
+  document.addEventListener("astro:before-preparation", () => {
+    if (threshold === false || threshold <= 0) {
+      startIndicator()
+      return
+    }
+
+    thresholdTimeout = window.setTimeout(() => {
+      thresholdTimeout = undefined
+      startIndicator()
+    }, threshold)
+  })
+
+  document.addEventListener("astro:before-swap", (event) => {
+    if (thresholdTimeout !== undefined) {
+      window.clearTimeout(thresholdTimeout)
+      thresholdTimeout = undefined
+    }
+
+    if (!isActive) {
+      return
+    }
+
+    mount(event.newDocument)
+
+    if (trickleInterval !== undefined) {
+      window.clearInterval(trickleInterval)
+      trickleInterval = undefined
+    }
+
+    setProgress(1)
+    window.setTimeout(() => {
+      setOpacity(0)
+    }, animationDuration / 2)
+
+    window.setTimeout(() => {
+      setProgress(0.25)
+      isActive = false
+    }, animationDuration * 2)
+  })
+})()
+</script>

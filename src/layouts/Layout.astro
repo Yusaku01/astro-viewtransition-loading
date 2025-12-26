@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import Loading from '../components/Loading.astro';
+import LoadingIndicator from '../components/LoadingIndicator.astro';
 ---
 
 <!doctype html>
@@ -15,7 +15,7 @@ import Loading from '../components/Loading.astro';
 	</head>
 	<body>
 		<slot />
-		<Loading threshold={0} />
+		<LoadingIndicator threshold={0} />
 	</body>
 </html>
 
