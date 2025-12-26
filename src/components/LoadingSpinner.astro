@@ -2,6 +2,8 @@
 export interface Props {
   color?: string;
   height?: string;
+  size?: string;
+  thickness?: string;
   class?: string;
   animationDuration?: number;
   threshold?: number | false;
@@ -9,48 +11,65 @@ export interface Props {
 
 const {
   color = '#0969da',
-  height = '3px',
-  class: className = 'astro-loading-indicator',
+  height,
+  size,
+  thickness,
+  class: className = 'astro-loading-spinner',
   animationDuration = 300,
   threshold: defaultThreshold = 200,
 } = Astro.props;
 
+const spinnerSize = size ?? height ?? '32px';
+const spinnerThickness = thickness ?? '3px';
 const threshold = defaultThreshold;
+const spinDuration = Math.max(600, animationDuration * 4);
 
+const keyframesName = 'astro-loading-spinner-spin';
 const styles = `.${className} {
   pointer-events: none;
-  background-color: ${color};
+  color: ${color};
   position: fixed;
+  inset: 0;
   z-index: 1031;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: ${height};
-  transition: transform ${animationDuration}ms ease-out, opacity ${
-    animationDuration / 2
-  }ms ${animationDuration / 2}ms ease-in;
-  transform: translate3d(0, 0, 0) scaleX(var(--progress, 0));
-  transform-origin: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity ${animationDuration}ms ease-out;
 }
 
-[dir="rtl"] .${className} {
-  transform-origin: 100% 0;
+.${className}[data-active="true"] {
+  opacity: 1;
+}
+
+.${className}::before {
+  content: "";
+  width: ${spinnerSize};
+  height: ${spinnerSize};
+  border-radius: 999px;
+  border: ${spinnerThickness} solid currentColor;
+  border-right-color: transparent;
+  border-top-color: transparent;
+  box-sizing: border-box;
+  animation: ${keyframesName} ${spinDuration}ms linear infinite;
+}
+
+@keyframes ${keyframesName} {
+  to {
+    transform: rotate(360deg);
+  }
 }
 `;
 ---
 
 <style set:html={styles}></style>
 
-<script is:inline define:vars={{ className, animationDuration, threshold }}>
+<script is:inline define:vars={{ className, threshold }}>
 (() => {
-  if (window.__astroLoadingIndicator) {
+  if (window.__astroLoadingSpinner) {
     return
   }
-  window.__astroLoadingIndicator = true
+  window.__astroLoadingSpinner = true
 
-  let progress = 0.25
-  let opacity = 0
-  let trickleInterval = undefined
   let thresholdTimeout = undefined
   let isActive = false
 
@@ -58,14 +77,13 @@ const styles = `.${className} {
   element.classList.add(className)
   element.setAttribute("aria-hidden", "true")
 
-  const setProgress = (value) => {
-    progress = value
-    element.style.setProperty("--progress", String(progress))
-  }
-
-  const setOpacity = (value) => {
-    opacity = value
-    element.style.setProperty("opacity", String(opacity))
+  const setActive = (value) => {
+    isActive = value
+    if (value) {
+      element.setAttribute("data-active", "true")
+      return
+    }
+    element.removeAttribute("data-active")
   }
 
   const mount = (doc) => {
@@ -75,8 +93,7 @@ const styles = `.${className} {
     doc.body.prepend(element)
   }
 
-  setProgress(progress)
-  setOpacity(opacity)
+  setActive(false)
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => mount(document))
@@ -84,26 +101,22 @@ const styles = `.${className} {
     mount(document)
   }
 
-  const startIndicator = () => {
+  const startSpinner = () => {
     if (isActive) {
       return
     }
-    isActive = true
-    setOpacity(1)
-    trickleInterval = window.setInterval(() => {
-      setProgress(progress + Math.random() * 0.03)
-    }, animationDuration)
+    setActive(true)
   }
 
   document.addEventListener("astro:before-preparation", () => {
     if (threshold === false || threshold <= 0) {
-      startIndicator()
+      startSpinner()
       return
     }
 
     thresholdTimeout = window.setTimeout(() => {
       thresholdTimeout = undefined
-      startIndicator()
+      startSpinner()
     }, threshold)
   })
 
@@ -119,20 +132,7 @@ const styles = `.${className} {
 
     mount(event.newDocument)
 
-    if (trickleInterval !== undefined) {
-      window.clearInterval(trickleInterval)
-      trickleInterval = undefined
-    }
-
-    setProgress(1)
-    window.setTimeout(() => {
-      setOpacity(0)
-    }, animationDuration / 2)
-
-    window.setTimeout(() => {
-      setProgress(0.25)
-      isActive = false
-    }, animationDuration * 2)
+    setActive(false)
   })
 })()
 </script>
