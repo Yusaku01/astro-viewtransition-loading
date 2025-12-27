@@ -1,46 +1,38 @@
-# Astro Starter Kit: Basics
+# astro-viewtransition-loading
 
-```sh
-pnpm create astro@latest -- --template basics
+Astro View Transitionと連携したローディングUIのデモ。
+
+## 機能
+
+- **LoadingIndicator** - 画面上部に表示されるプログレスバー
+- **LoadingSpinner** - 画面中央に表示されるスピナー
+
+両コンポーネントとも `threshold` プロパティで表示遅延を設定可能（デフォルト200ms）。
+
+## プロジェクト構造
+
+```
+src/
+├── api/           # 記事データAPI
+├── components/    # ローディングUI・記事コンポーネント
+├── layouts/       # レイアウト
+└── pages/         # ページ
+data/              # 記事データ（JSONC）
+docs/              # コンポーネントドキュメント
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## ローディングUIの切り替え
 
-## 🚀 Project Structure
+`src/layouts/Layout.astro` で使用するコンポーネントを変更：
 
-Inside of your Astro project, you'll see the following folders and files:
+- LoadingIndicator（プログレスバー）← 現在有効
+- LoadingSpinner（スピナー）← コメントアウト中
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+## コマンド
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+| コマンド | 説明 |
+|---------|------|
+| `pnpm install` | 依存関係のインストール |
+| `pnpm dev` | 開発サーバー起動（localhost:4321） |
+| `pnpm build` | 本番ビルド |
+| `pnpm preview` | ビルドのプレビュー |
